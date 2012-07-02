@@ -1,0 +1,84 @@
+<?php $this->addStyle('styles/login.css'); ?>
+<?php $this->addScript('scripts/enhance/md5.js'); ?>
+<?php $this->headBegin(); ?>
+<script type="text/javascript">
+//<![CDATA[
+$(function($){
+	// 显示登录窗体
+	$("#loginWindow").window({
+		height:150,
+		width:240
+	});
+	
+	// 页面提交
+	$('#loginForm').form({  
+		url:$(this).attr('action'),  
+		onSubmit: function(){
+			if(!this.account.value) {
+				alert('账户不能为空!');
+				return false;
+			}
+			if(!this.password.value) {
+				alert('密码不能为空!');
+				return false;
+			}
+		},  
+		success:function(data){  
+			data = $.parseJSON(data);
+			if(!data) {
+				alert("联系服务器失败, 请稍候重试.");
+				return;
+			}
+			if(data.code == 0) {
+				window.location.href = data.redirect;
+				return;
+			} else if(data.code == 1) {
+				alert('账户不存在!');
+			} else if(data.code == 2) {
+				alert('密码不正确!');
+			} else if(data.code == 3) {
+				alert('账户已停用, 请联系管理员!');
+			}
+			$('#loginForm').form('clear');
+		}
+	});  
+	
+	// 执行登录
+	$("#doLoginBtn").click(function(){
+		$(this).blur();
+		var passfield = $("#loginForm input[name=password]");
+		if(passfield.val() && 32 != passfield.val().length) {
+			passfield.val($.md5($.md5(passfield.val()).toLowerCase()).toLowerCase());
+		}
+		$('#loginForm').submit();
+	});
+	
+	// 执行关闭窗口
+	$("#doResetBtn").click(function(){
+		$(this).blur();
+		$('#loginForm').form('clear');
+	});
+});
+//]]>
+</script>
+<?php $this->headEnd(); ?>
+<?php include $this->getTemplate('common/header.phtml');?>
+<body>
+	<div id="loginWindow" title="欢迎登录OA系统" modal="true" closable="false" collapsible="false" maximizable="false" minimizable="false">
+		<form id="loginForm" action="<?php echo get_url('Home', 'doLogin'); ?>" method="post">
+			<p>
+				<span class="label">账户:</span>
+				<input type="text" name="account" class="field" />
+			</p>
+			<p>
+				<span class="label">密码:</span>
+				<input type="password" name="password" class="field" />
+			</p>
+			<p class="button">
+				<a id="doLoginBtn" class="easyui-linkbutton" iconCls="icon-ok" href="javascript:void(0);">登录</a>
+				<a id="doResetBtn" class="easyui-linkbutton" iconCls="icon-cancel" href="javascript:void(0);">重置</a>
+			</p>
+		</form>
+	</div>
+</body>
+<?php include $this->getTemplate('common/footer.phtml');?>

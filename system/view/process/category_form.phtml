@@ -1,0 +1,43 @@
+<div style="padding:5px; background: #fafafa; border-bottom:1px solid #ccc">  
+	<a href="javascript:void(0);" class="easyui-linkbutton do-save" plain="true" iconCls="icon-save">保存修改</a>
+</div>
+<fieldset class="form">
+	<legend><?php if(empty($category)):?>新建<?php else:?>编辑<?php endif;?>业务分类</legend>
+	<form id="categoryEditForm" action="<?php echo get_url('Process', 'saveCategory'); ?>" method="post">
+		<input type="hidden" name="id" value="<?php if($category)echo $category->id; else echo '0'; ?>" />
+		<table>
+			<tr>
+				<td class="label">分类名称:</td>
+				<td><input name="name" type="text" class="textfield long" value="<?php if($category)echo $category->name; ?>" /></td>
+			</tr>
+			<tr>
+				<td class="label">分类简介:</td>
+				<td><input name="description" type="text" class="textfield long" value="<?php if($category)echo $category->description; ?>" /></td>
+			</tr>
+		</table>
+	</form>
+</fieldset>
+<script type="text/javascript">
+//<![CDATA[
+$(function($){
+	$("#categoryEditForm").form({
+		url:$(this).attr('action'),
+		onSubmit: function(){
+			$(".do-save").linkbutton("disable");
+		},
+		success:function(data){  
+			data = $.parseJSON(data);
+			if(data.code) {
+				$.messager.alert('提示','操作成功!');
+				$("#processLayout").layout("panel", "center").panel("refresh");
+			}
+		}
+	});
+	$(".do-save").click(function(){
+		$(this).blur();
+		if($(this).linkbutton("options").disabled) return false;
+		$("#categoryEditForm").submit();
+	});
+});
+//]]>
+</script>

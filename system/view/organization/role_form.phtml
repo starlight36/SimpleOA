@@ -1,0 +1,59 @@
+<div style="padding:5px; background: #fafafa; border-bottom:1px solid #ccc">  
+	<a href="javascript:void(0);" class="easyui-linkbutton do-save" plain="true" iconCls="icon-save">保存修改</a>
+</div>
+<fieldset class="form">
+	<legend><?php if(empty($roleInfo)):?>新建<?php else:?>编辑<?php endif;?>角色</legend>
+	<form id="roleEditForm" action="<?php echo get_url('Organization', 'saveRole'); ?>" method="post">
+		<input type="hidden" name="id" value="<?php if($roleInfo)echo $roleInfo->id; else echo '0'; ?>" />
+		<table>
+			<tr>
+				<td class="label">隶属于:</td>
+				<td><select class="easyui-combotree" name="org_id" <?php if($roleInfo && $roleInfo->org_id == 0)echo 'disabled="true"'; ?> style="width:302px;"/></td>
+			</tr>
+			<tr>
+				<td class="label">角色名称:</td>
+				<td><input name="name" type="text" class="textfield long" value="<?php if($roleInfo)echo $roleInfo->name; ?>" /></td>
+			</tr>
+			<tr>
+				<td class="label">角色简介:</td>
+				<td><input name="description" type="text" class="textfield long" value="<?php if($roleInfo)echo $roleInfo->description; ?>" /></td>
+			</tr>
+		</table>
+	</form>
+</fieldset>
+<script type="text/javascript">
+//<![CDATA[
+$(function($){
+	$("select[name=org_id]").combotree({
+		url:"<?php echo get_url('Organization', 'treeSelector'); ?>",
+		value:"<?php if($roleInfo)echo $roleInfo->org_name; ?>"
+	});
+	$("#roleEditForm").form({
+		url:$(this).attr('action'),
+		onSubmit: function(){
+			if(this.id.value != 0 && !this.org_id.value) {
+				$.messager.alert('提示','请选择一个隶属机构.');
+				return false;
+			}
+			if(this.name.value.length < 2) {
+				$.messager.alert('提示','角色至少2个字.');
+				return false;
+			}
+			$(".do-save").linkbutton("disable");
+		},
+		success:function(data){  
+			data = $.parseJSON(data);
+			if(data.code) {
+				$.messager.alert('提示','操作成功!');
+				$("#orgLayout").layout("panel", "center").panel("refresh");
+			}
+		}
+	});
+	$(".do-save").click(function(){
+		$(this).blur();
+		if($(this).linkbutton("options").disabled) return false;
+		$("#roleEditForm").submit();
+	});
+});
+//]]>
+</script>

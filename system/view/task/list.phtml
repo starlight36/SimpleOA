@@ -1,0 +1,98 @@
+<table id="taskTodoList"></table>
+<div id="taskTodoListToolbar" style="padding:5px; height: auto; background: #fafafa;">
+	<div style="margin-bottom:5px;">
+		<a href="#" class="easyui-linkbutton do-dispose" iconCls="icon-edit" plain="true">查看/处理任务</a>
+	</div>
+	<div>
+		<label>任务ID: <input type="text" name="task-id" class="textfield" style="width: 80px;" /></label>
+		<?php if($listType != 'my'): ?><label>创建者名称: <input type="text" name="create-name" class="textfield" style="width: 120px;" /></label><?php endif; ?>
+		<label>
+			状态: 
+			<select id="taskStatusSelect" name="task-status" class="easyui-combobox" panelHeight="100" style="width: 80px;">
+				<option value="-1" selected="selected">未指定</option>
+				<option value="0">准备</option>
+				<option value="1">进行中</option>
+				<option value="2">已办结</option>
+			</select>
+		</label>
+		<label>关键字: <input type="text" name="keywords" class="textfield" /></label>
+		<a href="javascript:void(0);" class="easyui-linkbutton do-search" iconCls="icon-search">搜索</a>
+	</div>
+</div>
+<script type="text/javascript">
+//<![CDATA[
+$(function($){
+	// 加载待办任务列表
+	$("#taskTodoList").datagrid({
+		url:'<?php echo get_url('Task', 'getList', array('type' => $listType));?>',
+		rownumbers:true,
+		pagination:true,
+		idField:'id',
+		maximized:true,
+		toolbar:'#taskTodoListToolbar',
+		title:'<?php
+			if($listType == 'todo')
+				echo '待办任务列表';
+			elseif($listType == 'my')
+				echo '我的任务列表';
+			else
+				echo '历史任务列表';
+		?>',
+		columns:[[
+			{field:'id',title:'任务ID',width:50, align:'right'},
+			{field:'creator_name',title:'创建者',width:100},
+			{field:'title',title:'任务标题',width:240},
+			{field:'process_name',title:'流程模板',width:100},
+			{field:'time',title:'创建时间',width:130},
+			{field:'current_node_name',title:'当前环节',width:120},
+			{field:'current_status_name',title:'状态',width:60}
+		]],
+		loadFilter:function(data){
+			var statusNameMap = ["准备", "执行中", "已办结"];
+			$.each(data.rows, function(i, item){
+				var date = new Date(item.time*1000);
+				item.time = date.getFullYear()+"-"+(date.getMonth()+1)+"-"+date.getDate()
+							+" "+date.getHours()+":"+date.getMinutes()+":"+date.getSeconds();
+				item.current_status_name = statusNameMap[item.current_status];
+				if(!item.current_node_name) {
+					item.current_node_name = "结束";
+				}
+			});
+			return data;
+		},
+		onDblClickRow:function(rowIndex, rowData){
+			doDispose(rowData.id);
+		}
+	});
+	
+	// 按条件查找
+	$("a.do-search").click(function(){
+		$(this).blur();
+		$("#taskTodoList").datagrid('load', {
+			task_id: $("input[name=task-id]").val(),
+			creator_name: $("input[name=create-name]").val(),
+			keywords: $("input[name=keywords]").val(),
+			current_status: $("input[name=task-status]").val()
+		});
+	});
+	
+	// 处理流程
+	$("a.do-dispose").click(function(){
+		$(this).blur();
+		var selectedRowData = $("#taskTodoList").datagrid('getSelected');
+		if(selectedRowData == null) {
+			$.messager.alert('提示','请先选择一个任务再前往处理.');
+			return false;
+		}
+		doDispose(selectedRowData.id);
+	});
+	
+	// 前往处理页
+	function doDispose(taskId) {
+		var url = "<?php echo get_url('Task', 'view', array('id'=>'__ID__'));?>";
+		url = url.replace(/__ID__/g, taskId);
+		$("body").layout("panel", "center").panel("refresh", url);
+	}
+});
+//]]>
+</script>

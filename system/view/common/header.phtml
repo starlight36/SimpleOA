@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title><?php echo htmlspecialchars($__page__['title']);?> - OA办公系统</title>
+<?php if($__page__['keyword']):?><meta name="keywords" content="<?php echo htmlspecialchars($__page__['keyword']);?>" /><?php endif;?>
+<?php if($__page__['description']):?><meta name="description" content="<?php echo htmlspecialchars($__page__['description']);?>" /><?php endif;?>
+<link rel="stylesheet" type="text/css" href="<?php echo $contextPath; ?>scripts/easyui/themes/default/easyui.css">
+<link rel="stylesheet" type="text/css" href="<?php echo $contextPath; ?>scripts/easyui/themes/icon.css">
+<?php if(!empty($this->pageStyles)): foreach($this->pageStyles as $id => $src): ?>
+<link href="<?php echo htmlspecialchars($src); ?>"<?php if(is_string($id)):?> id="<?php echo $id;?>"<?php endif;?> rel="stylesheet" type="text/css" />
+<?php endforeach; endif;?>
+<script type="text/javascript" src="<?php echo $contextPath; ?>scripts/jquery.core.js?ver=1.7.2"></script>
+<script type="text/javascript" src="<?php echo $contextPath; ?>scripts/easyui/jquery.easyui.min.js?ver=1.2"></script>
+<script type="text/javascript" src="<?php echo $contextPath; ?>scripts/xheditor/xheditor-zh_cn.min.js?ver=1.1.13"></script>
+<?php if(!empty($this->pageScripts)): foreach($this->pageScripts as $id => $src): ?>
+<script type="text/javascript"<?php if(is_string($id)):?> id="<?php echo $id;?>"<?php endif;?> src="<?php echo htmlspecialchars($src);?>"></script>
+<?php endforeach; endif;?>
+<?php if(!empty($this->pageHead)): echo implode("\n", $this->pageHead); endif; ?>
+</head>

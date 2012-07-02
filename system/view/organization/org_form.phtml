@@ -1,0 +1,59 @@
+<div style="padding:5px; background: #fafafa; border-bottom:1px solid #ccc">  
+	<a href="javascript:void(0);" class="easyui-linkbutton do-save" plain="true" iconCls="icon-save">保存修改</a>
+</div>
+<fieldset class="form">
+	<legend><?php if(empty($orgInfo)):?>新建<?php else:?>编辑<?php endif;?>组织结构</legend>
+	<form id="orgEditForm" action="<?php echo get_url('Organization', 'saveOrg'); ?>" method="post">
+		<input type="hidden" name="id" value="<?php if($orgInfo)echo $orgInfo->id; else echo '0'; ?>" />
+		<table>
+			<tr>
+				<td class="label">隶属于:</td>
+				<td><select class="easyui-combotree" name="parent_id" <?php if($orgInfo && !$orgInfo->parent_name)echo 'disabled="true"'; ?> style="width:302px;"/></td>
+			</tr>
+			<tr>
+				<td class="label">机构名称:</td>
+				<td><input name="name" type="text" class="textfield long" value="<?php if($orgInfo)echo $orgInfo->name; ?>" /></td>
+			</tr>
+			<tr>
+				<td class="label">机构简介:</td>
+				<td><input name="description" type="text" class="textfield long" value="<?php if($orgInfo)echo $orgInfo->description; ?>" /></td>
+			</tr>
+		</table>
+	</form>
+</fieldset>
+<script type="text/javascript">
+//<![CDATA[
+$(function($){
+	$("select[name=parent_id]").combotree({
+		url:"<?php echo get_url('Organization', 'treeSelector'); ?>",
+		value:"<?php if($orgInfo)echo $orgInfo->parent_name; ?>"
+	});
+	$("#orgEditForm").form({
+		url:$(this).attr('action'),
+		onSubmit: function(){
+			if(this.id.value != 1 && !this.parent_id.value) {
+				$.messager.alert('提示','请选择一个隶属机构.');
+				return false;
+			}
+			if(this.name.value.length < 2) {
+				$.messager.alert('提示','机构名称至少2个字.');
+				return false;
+			}
+			$(".do-save").linkbutton("disable");
+		},
+		success:function(data){  
+			data = $.parseJSON(data);
+			if(data.code) {
+				$.messager.alert('提示','操作成功!');
+				$("#orgLayout").layout("panel", "center").panel("refresh");
+			}
+		}
+	});
+	$(".do-save").click(function(){
+		$(this).blur();
+		if($(this).linkbutton("options").disabled) return false;
+		$("#orgEditForm").submit();
+	});
+});
+//]]>
+</script>

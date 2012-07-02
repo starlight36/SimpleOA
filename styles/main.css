@@ -1,0 +1,58 @@
+/* 主样式表文件 */
+body { margin: 0; padding: 0; font-family: "微软雅黑"; font-size: 12px;  text-shadow:1px 1px 1px #DDD; overflow: hidden; }
+.title { position: relative; background: #0D61A6 url(images/title_bg.png) repeat-x; height: 45px; }
+.title h1 { color: #FFF; font-size: 22px; margin: 6px 0 5px 40px; text-shadow:1px 1px 1px #333; }
+.title .user-panel { position: absolute; right: 15px; top: 13px; color: #FFF; text-shadow:1px 1px 1px #333; }
+.title .user-panel a { color: #FFF; }
+.sidenav { width: 200px; }
+.form {
+	background-color: #F5F5F5;
+    border: 1px solid rgba(0, 0, 0, 0.15);
+    border-radius: 4px 4px 4px 4px;
+    line-height: 18px;
+    margin: 5px 10px 5px 10px;
+    padding: 3px;
+}
+.form legend {
+	font-size: 16px;
+	font-weight: bold;
+	margin: 5px 0 8px 12px;
+}
+.form form, .form section {
+	margin: 5px;
+	padding: 0;
+}
+.form form table td { margin: 3px; }
+.form form table td.label { padding-right: 15px; text-align: right; }
+input.textfield { border: 1px solid #CCC; line-height: 22px; padding: 3px 0 3px 0;  width: 180px; }
+input.long { width: 300px; }
+textarea { border: 1px solid #CCC; width: 180px; height: 70px; font-size: 12px; }
+textarea.long { width: 300px; }
+.form form table td.do-post { padding: 15px 0 0 30px; height: 40px; }
+
+.dlg-form { margin: 5px; padding: 5px 20px; font-size: 12px; }
+.dlg-form h3 { margin: 0; padding: 0; border-bottom: 1px solid #CCCCCC; color: #666666; font-size: 14px; font-weight: bold; margin-bottom: 10px; padding: 5px 0;}
+.dlg-form table td { margin-bottom: 5px; }
+
+
+/* 废弃的流程的样式 */
+span.deprecated-process { text-decoration: line-through; color: #CCCCCC; }
+
+/* 信息展示表格样式 */
+.info-table {
+	border: 1px solid #DDD;
+	border-collapse: collapse;
+	border-spacing: 0;
+	margin-bottom: 18px;
+    width: 100%;
+    max-width: 100%;
+	background-color: #FFF;
+}
+
+.info-table tr td, .info-table th {
+	line-height: 18px;
+    padding: 8px;
+    text-align: left;
+    vertical-align: top;
+	border: 1px solid #DDD;
+}

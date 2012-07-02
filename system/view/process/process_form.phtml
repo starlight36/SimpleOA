@@ -1,0 +1,448 @@
+<div style="padding:5px; background: #fafafa; border-bottom:1px solid #ccc">  
+	<a href="javascript:void(0);" class="easyui-linkbutton do-save" plain="true" iconCls="icon-save">保存信息</a>
+	<a href="javascript:void(0);" class="easyui-linkbutton do-acl" plain="true" iconCls="icon-process-acl">访问权限</a>
+	<?php if($processInfo->status == 0): ?><a href="javascript:void(0);" class="easyui-linkbutton do-pub" plain="true" iconCls="icon-process-pub">发布流程</a><?php endif; ?>
+</div>
+<fieldset class="form">
+	<legend>流程基本信息</legend>
+	<form id="processInfoEditForm" action="<?php echo get_url('Process', 'saveProcessInfo'); ?>" method="post">
+		<input type="hidden" name="id" value="<?php if($processInfo)echo $processInfo->id; ?>" />
+		<table>
+			<tr>
+				<td class="label">流程名称:</td>
+				<td><input name="name" type="text" class="textfield long" value="<?php if($processInfo)echo $processInfo->name; ?>" /></td>
+			</tr>
+			<tr>
+				<td class="label">所属分类:</td>
+				<td><select id="categorySelect" name="cate_id"></select></td>
+			</tr>
+			<tr>
+				<td class="label">当前状态:</td>
+				<td><input type="text" class="textfield long" disabled="true" value="<?php if($processInfo->status == 0) echo '未启用'; elseif($processInfo->status == 1) echo '已启用';else echo '已废弃'; ?>" /></td>
+			</tr>
+			<tr>
+				<td class="label">流程简介:</td>
+				<td><textarea name="description" style="width: 460px; height: 150px;"><?php if($processInfo)echo htmlspecialchars($processInfo->description); ?></textarea></td>
+			</tr>
+		</table>
+	</form>
+</fieldset>
+<fieldset class="form">
+	<legend>流程设计</legend>
+	<section style="background-color: #FFF;">
+		<table id="processNodeList" toolbar="#processNodeToolbar"></table>
+		<?php if($processInfo->status == 0): ?>
+		<div id="processNodeToolbar">
+			<a href="javascript:void(0);" class="easyui-linkbutton do-add-process-node" iconCls="icon-add" plain="true">添加节点</a>
+			<a href="javascript:void(0);" class="easyui-linkbutton do-edit-process-node" iconCls="icon-edit" plain="true">编辑节点</a>
+			<a href="javascript:void(0);" class="easyui-linkbutton do-remove-process-node" iconCls="icon-remove" plain="true">删除节点</a>
+		</div>
+		<?php endif; ?>
+	</section>
+</fieldset>
+<fieldset class="form">
+	<legend>表单管理</legend>
+	<section style="background-color: #FFF;">
+		<table id="processFormList" toolbar="#processFormToolbar"></table>
+		<?php if($processInfo->status == 0): ?>
+		<div id="processFormToolbar">
+			<a href="javascript:void(0);" class="easyui-linkbutton do-add-process-form" iconCls="icon-add" plain="true">添加表单</a>
+			<a href="javascript:void(0);" class="easyui-linkbutton do-edit-process-form" iconCls="icon-edit" plain="true">编辑表单</a>
+			<a href="javascript:void(0);" class="easyui-linkbutton do-remove-process-form" iconCls="icon-remove" plain="true">删除表单</a>
+		</div>
+		<?php endif; ?>
+	</section>
+</fieldset>
+<!-- 流程节点编辑对话框 开始 -->
+<div id="processNodeEditDlg" inline="true" closed="true" class="easyui-dialog" title="编辑流程节点" buttons="#processNodeEditDlgButtons" modal="true" style="width:440px;height:360px;">  
+	<form id="processNodeEditForm" action="<?php echo get_url('Process', 'saveProcessNode'); ?>" method="post" class="dlg-form">
+		<input type="hidden" name="id" />
+		<input type="hidden" name="process_id" />
+		<h3>流程节点信息</h3>
+		<table>
+			<tr>
+				<td class="label">节点名称: </td>
+				<td><input type="text" name="name" class="textfield long" /></td>
+			</tr>
+			<tr>
+				<td class="label">节点简介: </td>
+				<td><input type="text" name="description" class="textfield long" /></td>
+			</tr>
+			<tr>
+				<td class="label">唯一标识: </td>
+				<td><input type="text" name="node_key" class="textfield long" /></td>
+			</tr>
+			<tr>
+				<td class="label">参与者角色: </td>
+				<td><input type="text" name="actor" id="processNodeActorSelect" class="textfield long" /></td>
+			</tr>
+			<tr>
+				<td class="label">后继表达式: </td>
+				<td><textarea name="goto_exp" class="long"></textarea></td>
+			</tr>
+			<tr>
+				<td class="label">可用操作: </td>
+				<td>
+					<select class="easyui-combobox" style="width: 302px;" panelHeight="100" multiple="true" editable="false" name="action_exp[]">
+						<option value="complete">办结</option>
+						<option value="return">退回</option>
+						<option value="jump">跳转</option>
+						<option value="close">结束</option>
+					</select>
+				</td>
+			</tr>
+		</table>
+	</form>
+</div>
+<div id="processNodeEditDlgButtons">
+	<a href="javascript:void(0);" class="easyui-linkbutton do-save-process-node" iconCls="icon-ok">保存</a>
+	<a href="javascript:void(0);" class="easyui-linkbutton" iconCls="icon-cancel" onclick="$('#processNodeEditDlg').dialog('close');">取消</a>
+</div>
+<!-- 流程节点编辑对话框 结束 -->
+<!-- 流程访问权限对话框 开始 -->
+<div id="processAclEditDlg" inline="true" closed="true" class="easyui-dialog" title="流程权限管理" buttons="#processAclEditDlgButtons" modal="true" style="width:400px;height:360px;">
+	<table id="processAclList" toolbar="#processAclToolbar"></table>
+	<div id="processAclToolbar">
+		<a href="javascript:void(0);" class="easyui-linkbutton do-add-process-acl" iconCls="icon-add" plain="true">添加</a>
+		<a href="javascript:void(0);" class="easyui-linkbutton do-remove-process-acl" iconCls="icon-remove" plain="true">删除</a>
+	</div>
+</div>
+<div id="processAclEditDlgButtons">
+	<a href="javascript:void(0);" class="easyui-linkbutton" iconCls="icon-ok" onclick="$('#processAclEditDlg').dialog('close');">确定</a>
+	<a href="javascript:void(0);" class="easyui-linkbutton" iconCls="icon-cancel" onclick="$('#processAclEditDlg').dialog('close');">取消</a>
+</div>
+<!-- 流程访问权限对话框 结束 -->
+<!-- 流程访问权限角色添加 开始 -->
+<div id="processAclRoleAddDlg" inline="true" closed="true" class="easyui-dialog" title="选择添加新角色" buttons="#processAclRoleAddDlgButtons" modal="true" style="width:330px;height:110px;">
+	<p style="margin: 8px;"><input type="text" name="acl-role-id" id="processAclRoleSelect" /></p>
+</div>
+<div id="processAclRoleAddDlgButtons">
+	<a href="javascript:void(0);" class="easyui-linkbutton do-add-acl-role" iconCls="icon-ok">确定</a>
+	<a href="javascript:void(0);" class="easyui-linkbutton" iconCls="icon-cancel" onclick="$('#processAclRoleAddDlg').dialog('close');">取消</a>
+</div>
+<!-- 流程访问权限角色添加 结束 -->
+<script type="text/javascript">
+//<![CDATA[
+$(function($){
+	$('#categorySelect').combobox({
+		url:'<?php echo get_url('Process', 'getProcessCategoryList'); ?>',
+		width:302,
+		editable:false,
+		valueField:'id',
+		textField:'text',
+		onLoadSuccess: function(data) {
+			$(this).combobox('select', <?php if($processInfo) echo $processInfo->cate_id; ?>);
+		}
+	});
+	$("textarea[name=description]").xheditor({tools:'simple'});
+	$("#processInfoEditForm").form({
+		url:$(this).attr('action'),
+		onSubmit: function(){
+			$(".do-save").linkbutton("disable");
+		},
+		success:function(data){  
+			data = $.parseJSON(data);
+			if(data.code) {
+				$.messager.alert('提示','操作成功!');
+				$("#processLayout").layout("panel", "center").panel("refresh");
+			}
+		}
+	});
+	$(".do-save").click(function(){
+		$(this).blur();
+		if($(this).linkbutton("options").disabled) return false;
+		$("#processInfoEditForm").submit();
+	});
+	// 发布流程
+	$("a.do-pub").click(function(){
+		$(this).blur();
+		$.messager.confirm('确认发布','你确定发布这个流程吗？<br />请再次确认流程已经无需修改，一旦发布将无法修改流程。',function(r){
+			if (r){  
+				$.post('<?php echo get_url('Process', 'pubProcess');?>', {id:'<?php if($processInfo)echo $processInfo->id; ?>'}, function(data){
+					if(data && data.code) {
+						$.messager.alert('提示','发布成功！');
+						$("#processLayout").layout("panel", "center").panel("refresh");
+					}
+				},"json");
+			}
+		});
+	});
+	// 编辑访问权限
+	$("a.do-acl").click(function(){
+		$(this).blur();
+		$("#processAclEditDlg").dialog("open");
+	});
+	/* 流程设计相关JS代码 */
+	/* 初始化流程列表 */
+	$("#processNodeList").datagrid({
+		url: '<?php echo get_url('Process', 'getProcessNodeList', array('id'=>$processInfo->id)); ?>',
+		idField: 'id',
+		rownumbers: true,
+		columns:[[  
+			{field:'name',title:'名称',width:130},
+			{field:'description',title:'简介',width:180},
+			{field:'node_key',title:'标识',width:80},
+			{field:'actor_name',title:'参与者角色',width:100}
+		]],
+		onDblClickRow: function(rowIndex, rowData) {
+			<?php if($processInfo->status == 0): ?>editProcessNode(rowData);<?php endif; ?>
+		}
+	});
+	/* 流程设计工具栏动作 */
+	// 增加节点
+	$("a.do-add-process-node").click(function(){
+		editProcessNode(0);
+	});
+	// 编辑节点
+	$("a.do-edit-process-node").click(function(){
+		$(this).blur();
+		var selectedRowData = $("#processNodeList").datagrid('getSelected');
+		if(selectedRowData == null) {
+			$.messager.alert('提示','请先选择一个流程节点以编辑.');
+			return false;
+		}
+		editProcessNode(selectedRowData);
+	});
+	// 编辑对话框的参与者选择器
+	$("#processNodeActorSelect, #processAclRoleSelect").combogrid({
+		url:'<?php echo get_url('Organization', 'rolecombo'); ?>',
+		panelWidth:302,
+		multiple:false,
+		editable:false,
+		width:302,
+		idField:'id',
+		textField:'name',
+		columns:[[
+			{field:'name',title:'角色名称',width:100},
+			{field:'description',title:'角色简介',width:180}
+		]]
+	});
+	// 保存节点
+	$("a.do-save-process-node").click(function(){
+		$(this).blur();
+		$("#processNodeEditForm").form('submit',{
+			url:$(this).attr('action'),
+			onSubmit: function(){
+				if(this.name.value.length < 1) {
+					$.messager.alert('提示','节点名称不能为空.');
+					return false;
+				}
+				if(!(/^\d+?$/).test(this.actor.value)) {
+					$.messager.alert('提示','请选择一个角色作为本节点任务的执行者.');
+					return false;
+				}
+				if(!(/^\w+?$/).test(this.node_key.value)) {
+					$.messager.alert('提示','节点标识符只能由大写字母,数字,下划线构成.');
+					return false;
+				}
+			},
+			success:function(data){
+				data = $.parseJSON(data);
+				if(data && data.code) {
+					$("#processNodeEditDlg").dialog('close');
+					$("#processNodeList").datagrid('reload');
+				} else {
+					$.messager.alert('操作失败', data.msg);
+				}
+			}
+		});
+	});
+	// 删除节点
+	$("a.do-remove-process-node").click(function(){
+		var selectedRowData = $("#processNodeList").datagrid('getSelected');
+		if(selectedRowData == null) {
+			$.messager.alert('提示','请先选择一个流程节点以编辑.');
+			return false;
+		}
+		$.messager.confirm('确认删除','你确定删除选中的流程节点吗？<br />中断某一节点可能导致流程不可用。',function(r){
+			if (r){  
+				$.post('<?php echo get_url('Process', 'removeProcessNode');?>', {id:selectedRowData.id}, function(data){
+					if(data && data.code) {
+						$.messager.alert('提示','操作成功！');
+						$("#processNodeList").datagrid('reload');
+					}else{
+						$.messager.alert('操作失败',"删除节点失败，请重试操作。");
+					}
+				},"json");
+			}
+		});
+	});
+	
+	/*
+	 * 创建/编辑流程节点
+	 */
+	function editProcessNode(rowData) {
+		$("#processNodeEditDlg").dialog('open');
+		$("#processNodeEditForm").form('clear');
+		$("#processNodeEditForm input[name=node_key]").attr('readonly', false);
+		if(rowData) {
+			$("#processNodeEditDlg").dialog('setTitle', '编辑流程节点');
+			rowData['action_exp[]'] = rowData.action_exp.split(',');
+			$("#processNodeEditForm").form('load', rowData);
+		} else {
+			$("#processNodeEditDlg").dialog('setTitle', '新建流程节点');
+			if($("#processNodeList").datagrid('getRows') == 0) {
+				$("#processNodeEditForm input[name=node_key]").val('start');
+				$("#processNodeEditForm input[name=node_key]").attr('readonly', true);
+			}
+			$("#processNodeEditForm").form('load', {process_id:'<?php if($processInfo)echo $processInfo->id; ?>'});
+		}
+	}
+	
+	// 表单管理列表
+	$("#processFormList").datagrid({
+		url: '<?php echo get_url('Form', 'getFormList', array('pid'=>$processInfo->id)); ?>',
+		idField: 'id',
+		rownumbers: true,
+		columns:[[  
+			{field:'name',title:'名称',width:150},
+			{field:'description',title:'简介',width:240}
+		]],
+		onDblClickRow: function(rowIndex, rowData) {
+			<?php if($processInfo->status == 0): ?>editProcessForm(rowData);<?php endif; ?>
+		}
+	});
+	
+	// 添加表单
+	$("a.do-add-process-form").click(function(){
+		$(this).blur();
+		editProcessForm();
+	});
+	
+	// 编辑表单
+	$("a.do-edit-process-form").click(function(){
+		$(this).blur();
+		var selectedRowData = $("#processFormList").datagrid('getSelected');
+		if(selectedRowData == null) {
+			$.messager.alert('提示','请先选择一个表单以编辑.');
+			return false;
+		}
+		editProcessForm(selectedRowData);
+	});
+	
+	// 删除表单
+	$("a.do-remove-process-form").click(function(){
+		$(this).blur();
+		var selectedRowData = $("#processFormList").datagrid('getSelected');
+		if(selectedRowData == null) {
+			$.messager.alert('提示','请先选择一个表单以删除.');
+			return false;
+		}
+		$.messager.confirm('确认删除','你确定删除选中的表单吗？',function(r){
+			if (r){  
+				$.post('<?php echo get_url('Form', 'delete');?>', {id:selectedRowData.id}, function(data){
+					if(data && data.code) {
+						$.messager.alert('提示','操作成功！');
+						$("#processFormList").datagrid('reload');
+					}else{
+						$.messager.alert('操作失败',"删除节点失败，请重试操作。");
+					}
+				},"json");
+			}
+		});
+	});
+	
+	/**
+	 * 编辑表单
+	 */
+	function editProcessForm(rowData) {
+		var url = '<?php echo get_url('Form', 'edit', array('id' => '__ID__', 'pid' => '__PID__'));?>';
+		if(rowData) {
+			url = url.replace(/__ID__/g, rowData.id);
+			url = url.replace(/__PID__/g, rowData.process_id);
+		} else {
+			url = url.replace(/__ID__/g, '0');
+			url = url.replace(/__PID__/g, '<?php if($processInfo)echo $processInfo->id; ?>');
+		}
+		$("#processLayout").layout("panel", "center").panel("refresh", url);
+	}
+	
+	/* 访问权限管理 */
+	$("#processAclList").datagrid({
+		url:'<?php echo get_url('Process', 'getAclList', array('id' => $processInfo->id)); ?>',
+		border: false,
+		idField: 'role_id',
+		rownumbers: true,
+		columns:[[
+			{field:'role_name',title:'角色名称',width:220},
+			{field:'supervise',title:'监督',width:60, align:'center'},
+			{field:'create',title:'创建',width:60, align:'center'}
+		]],
+		loadFilter: function(data) {
+			$.each(data, function(i, item){
+				var supervise = item.supervise;
+				var create = item.create;
+				item.supervise = '<input type="checkbox" class="do-toggle-permission" data-id="'
+						+item.role_id+'" data-permission="1"';
+				item.create = '<input type="checkbox" class="do-toggle-permission" data-id="'
+						+item.role_id+'" data-permission="2"';
+				if(supervise) {
+					item.supervise += ' checked="checked"'
+				}
+				if(create) {
+					item.create += ' checked="checked"'
+				}
+				item.supervise += ' />';
+				item.create += ' />';
+			});
+			return {total:data.length, rows:data};
+		},
+		onLoadSuccess:function(data) {
+			// 切换权限
+			$(".do-toggle-permission").click('click', function(){
+				var status = -$(this).attr("data-permission");
+				var role_id = $(this).attr("data-id");
+				if($(this).attr("checked")) {
+					status = -status;
+				}
+				$.post('<?php echo get_url('Process', 'setAcl'); ?>', {
+						rid:$(this).attr("data-id"),
+						pid:'<?php if($processInfo)echo $processInfo->id; ?>',
+						permission:status
+					}, function(data){
+						if(!data) {
+							$(this).attr("checked", !status);
+						}
+				}, 'json');
+			});
+		}
+	});
+	// 打开添加访问角色对话框
+	$("a.do-add-process-acl").click(function(){
+		$(this).blur();
+		$("#processAclRoleAddDlg").dialog("open");
+	});
+	// 添加访问角色
+	$("a.do-add-acl-role").click(function(){
+		var role_id = $("input[name=acl-role-id]").val();
+		if(!role_id) {
+			$.messager.alert("提示", "请选择一个角色再添加.");
+			return;
+		}
+		$.post("<?php echo get_url('Process', 'addAclRole'); ?>", {
+				rid:role_id,
+				pid:'<?php if($processInfo)echo $processInfo->id; ?>'
+			}, function(data){
+				$("#processAclList").datagrid("reload");
+				$("#processAclRoleAddDlg").dialog("close");
+		}, "json");
+	});
+	// 删除访问控制角色记录
+	$("a.do-remove-process-acl").click(function(){
+		$(this).blur();
+		var selectedRowData = $("#processAclList").datagrid('getSelected');
+		if(!selectedRowData) {
+			$.messager.alert('提示','请先选择一个项目以编辑.');
+			return false;
+		}
+		$.post("<?php echo get_url('Process', 'removeAclRole'); ?>", {
+				rid:selectedRowData.role_id,
+				pid:selectedRowData.process_id
+			}, function(data){
+				$("#processAclList").datagrid("reload");
+		}, "json");
+	});
+	
+});
+//]]>
+</script>

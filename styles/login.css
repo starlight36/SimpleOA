@@ -1,0 +1,7 @@
+/* 登录页样式表文件 */
+body { margin: 0; padding: 0; font-family: "微软雅黑"; font-size: 12px; height: 100%; width: 100%; }
+#loginForm { margin: 0; padding: 0; }
+#loginForm p { margin: 10px 0 8px 0; padding: 0 0 0 50px; }
+#loginForm p input.field { height: 18px; width: 150px; border: 1px solid #CCC; }
+#loginForm span.label { margin-left: -30px; }
+#loginForm p.button { margin-top: 15px; padding: 0; text-align: center; }

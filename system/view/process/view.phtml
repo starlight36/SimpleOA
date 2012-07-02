@@ -1,0 +1,62 @@
+<?php if($processInfo): ?>
+<div style="padding:5px; background: #fafafa; border-bottom:1px solid #ccc">  
+	<a href="javascript:void(0);" class="easyui-linkbutton do-create-task" plain="true" iconCls="icon-task-create">发起任务</a>
+	<a href="javascript:void(0);" class="easyui-linkbutton do-query-task" plain="true" iconCls="icon-task-query">审计任务</a>
+</div>
+<fieldset class="form">
+	<legend><?php echo htmlspecialchars($processInfo->name); ?></legend>
+	<section style="padding: 10px;">
+		<h3 style="margin: 0;">说明</h3><hr />
+		<?php echo $processInfo->description; ?>
+	</section>
+</fieldset>
+<!-- 创建任务 开始 -->
+<div id="createTaskDlg" inline="true" closed="true" class="easyui-dialog" title="创建任务: 填写任务标题" buttons="#createTaskDlgButtons" modal="true" style="width:330px;height:120px; overflow: hidden;">
+	<p style="margin: 8px;"><input type="text" name="task-title" style="border: 1px solid #CCC; line-height: 22px; padding: 3px 0 3px 0;  width: 300px;" /></p>
+</div>
+<div id="createTaskDlgButtons">
+	<a href="javascript:void(0);" class="easyui-linkbutton do-save-task-title" iconCls="icon-ok">创建</a>
+	<a href="javascript:void(0);" class="easyui-linkbutton" iconCls="icon-cancel" onclick="$('#createTaskDlg').dialog('close');">取消</a>
+</div>
+<!-- 流程访问权限角色添加 结束 -->
+<script type="text/javascript">
+//<![CDATA[
+$(function($){
+	// 发起任务
+	$("a.do-create-task").click(function(){
+		$(this).blur();
+		$("#createTaskDlg").dialog("open");
+	});
+	
+	// 提交创建任务
+	$("a.do-save-task-title").click(function(){
+		$.post("<?php echo get_url('Task', 'create');?>", {
+				'id':'<?php echo $processInfo->id; ?>',
+				'title':$("input[name=task-title]").val()
+			}, function(data){
+				if(data && data.code) {
+					var url = "<?php echo get_url('Task', 'view', array('id'=>'__ID__'));?>";
+					url = url.replace(/__ID__/g, data.task_id);
+					$("body").layout("panel", "center").panel("refresh", url);
+				} else {
+					$.messager.alert("信息", "创建流程出错, 可能是找不到流程, 或者没有权限.");
+				}
+		}, "json");
+	});
+	
+	// 审计任务
+	$("a.do-query-task").click(function(){
+		$(this).blur();
+		$("body").layout("panel", "center").panel("refresh", "<?php echo get_url('Task', 'query', array('pid'=>$processInfo->id));?>");
+	});
+});
+//]]>
+</script>
+<?php else: ?>
+<fieldset class="form">
+	<legend>错误消息</legend>
+	<section style="padding: 15px;">
+		<h3>查询的流程不存在, 或者您没有访问权限.</h3>
+	</section>
+</fieldset>
+<?php endif; ?>

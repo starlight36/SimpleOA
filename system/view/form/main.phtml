@@ -1,0 +1,241 @@
+<div style="padding:5px; background: #fafafa; border-bottom:1px solid #ccc">
+	<a href="javascript:void(0);" class="easyui-linkbutton do-back" plain="true" iconCls="icon-back">返回流程</a>
+	<a href="javascript:void(0);" class="easyui-linkbutton do-save" plain="true" iconCls="icon-save">保存信息</a>
+</div>
+<fieldset class="form">
+	<legend><?php if(empty($formInfo) || empty($formInfo->id)):?>新建<?php else:?>编辑<?php endif;?>表单信息</legend>
+	<form id="formInfoEditForm" action="<?php echo get_url('Form', 'save'); ?>" method="post">
+		<input type="hidden" name="id" value="<?php if($formInfo)echo $formInfo->id; ?>" />
+		<input type="hidden" name="process_id" value="<?php if($formInfo && $formInfo->process_id)echo $formInfo->process_id; else echo $REQUEST->getQuery('pid'); ?>" />
+		<table>
+			<tr>
+				<td class="label">表单名称:</td>
+				<td><input name="name" type="text" class="textfield long" value="<?php if($formInfo) echo htmlspecialchars($formInfo->name); ?>" /></td>
+			</tr>
+			<tr>
+				<td class="label">表单标识:</td>
+				<td><input name="form_key" type="text" class="textfield long" value="<?php if($formInfo)echo htmlspecialchars($formInfo->form_key); ?>" /></td>
+			</tr>
+			<tr>
+				<td class="label">表单说明:</td>
+				<td><textarea name="description" style="width: 460px; height: 150px;"><?php if($formInfo)echo htmlspecialchars($formInfo->description); ?></textarea></td>
+			</tr>
+		</table>
+	</form>
+</fieldset>
+<?php if($formInfo && $formInfo->id): ?>
+<fieldset class="form">
+	<legend>表单字段</legend>
+	<section style="background-color: #FFF;">
+		<table id="formFieldList" toolbar="#formFieldToolbar"></table>
+		<div id="formFieldToolbar">
+			<a href="javascript:void(0);" class="easyui-linkbutton do-add-field" iconCls="icon-add" plain="true">添加字段</a>
+			<a href="javascript:void(0);" class="easyui-linkbutton do-edit-field" iconCls="icon-edit" plain="true">编辑字段</a>
+			<a href="javascript:void(0);" class="easyui-linkbutton do-remove-field" iconCls="icon-remove" plain="true">删除字段</a>
+		</div>
+	</section>
+</fieldset>
+<!-- 字段编辑对话框 开始 -->
+<div id="fieldEditDlg" inline="true" closed="true" class="easyui-dialog" title="编辑字段" buttons="#fieldEditDlgButtons" modal="true" style="width:440px;height:360px;">  
+	<form id="fieldEditForm" action="<?php echo get_url('Form', 'saveField'); ?>" method="post" class="dlg-form">
+		<input type="hidden" name="id" />
+		<input type="hidden" name="form_id" />
+		<h3>字段信息</h3>
+		<table>
+			<tr>
+				<td class="label">字段名称: </td>
+				<td><input type="text" name="name" class="textfield long" /></td>
+			</tr>
+			<tr>
+				<td class="label">字段说明: </td>
+				<td><input type="text" name="description" class="textfield long" /></td>
+			</tr>
+			<tr>
+				<td class="label">唯一标识: </td>
+				<td><input type="text" name="field_key" class="textfield long" /></td>
+			</tr>
+			<tr>
+				<td class="label">字段类型: </td>
+				<td>
+					<select class="easyui-combobox" style="width: 302px;" panelHeight="100" editable="false" name="type">
+						<?php $fieldTypeList = $CONFIG->get('fieldtype'); foreach($fieldTypeList as $key => $val): ?>
+						<option value="<?php echo $key;?>"><?php echo $val['name']; ?></option>
+						<?php endforeach; ?>
+					</select>
+				</td>
+			</tr>
+			<tr>
+				<td class="label">参数: </td>
+				<td><input type="text" name="config" class="textfield long" /></td>
+			</tr>
+			<tr>
+				<td class="label">必填字段: </td>
+				<td>
+					<select class="easyui-combobox" style="width: 302px;" panelHeight="50" editable="false" name="required">
+						<option value="0">否</option>
+						<option value="1">是</option>
+					</select>
+				</td>
+			</tr>
+			<tr>
+				<td class="label">默认值: </td>
+				<td><input type="text" name="default_value" class="textfield long" /></td>
+			</tr>
+			<tr>
+				<td class="label">验证表达式: </td>
+				<td><input type="text" name="validator" class="textfield long" /></td>
+			</tr>
+		</table>
+	</form>
+</div>
+<div id="fieldEditDlgButtons">
+	<a href="javascript:void(0);" class="easyui-linkbutton do-save-field" iconCls="icon-ok">保存</a>
+	<a href="javascript:void(0);" class="easyui-linkbutton" iconCls="icon-cancel" onclick="$('#fieldEditDlg').dialog('close');">取消</a>
+</div>
+<!-- 流程节点编辑对话框 结束 -->
+<?php endif; ?>
+<script type="text/javascript">
+//<![CDATA[
+$(function($){
+	// 返回按钮
+	$("a.do-back").click(function(){
+		var url = '<?php echo get_url('Process', 'editProcessInfo', array('id'=>$REQUEST->getQuery('pid'))); ?>';
+		$("#processLayout").layout("panel", "center").panel("refresh", url);
+	});
+	
+	// 保存信息
+	$("a.do-save").click(function(){
+		$(this).blur();
+		$("#formInfoEditForm").submit();
+	});
+	
+	// 表单基本信息表
+	$("#formInfoEditForm").form({
+		url:$(this).attr('action'),
+		onSubmit: function(){
+			if(this.name.value.length < 1) {
+				$.messager.alert('提示','字段名称不能为空.');
+				return false;
+			}
+			if(!(/^\w+?$/).test(this.form_key.value)) {
+				$.messager.alert('提示','表单标识符只能由大写字母,数字,下划线构成.');
+				return false;
+			}
+		},
+		success:function(data){
+			data = $.parseJSON(data);
+			if(data && data.code) {
+				var url = '<?php echo get_url('Form', 'edit', array('id' => '__ID__', 'pid' => '__PID__'));?>';
+				url = url.replace(/__ID__/g, data.form_id);
+				url = url.replace(/__PID__/g, "<?php if($formInfo && $formInfo->process_id)echo $formInfo->process_id; else echo $REQUEST->getQuery('pid'); ?>");
+				$("#processLayout").layout("panel", "center").panel("refresh", url);
+			} else {
+				$.messager.alert('保存出错', data.msg);
+			}
+		}
+	});
+	
+	// 初始化编辑器
+	$("textarea[name=description]").xheditor({tools:'simple'});
+	
+	// 加载字段列表
+	$("#formFieldList").datagrid({
+		url: '<?php echo get_url('Form', 'getFiledList', array('id'=>$formInfo->id)); ?>',
+		idField: 'id',
+		rownumbers: true,
+		columns:[[  
+			{field:'name',title:'名称',width:130},
+			{field:'description',title:'简介',width:180},
+			{field:'field_key',title:'标识',width:100},
+		]],
+		onDblClickRow: function(rowIndex, rowData) {
+			editField(rowData);
+		}
+	});
+	
+	// 添加字段
+	$("a.do-add-field").click(function(){
+		$(this).blur();
+		editField();
+	});
+	
+	// 编辑字段
+	$("a.do-edit-field").click(function(){
+		$(this).blur();
+		var selectedRowData = $("#formFieldList").datagrid('getSelected');
+		if(selectedRowData == null) {
+			$.messager.alert('提示','请先选择一个字段以编辑.');
+			return false;
+		}
+		editField(selectedRowData);
+	});
+	
+	// 保存字段
+	$("a.do-save-field").click(function(){
+		$(this).blur();
+		$("#fieldEditForm").form("submit", {
+			url:$(this).attr('action'),
+			onSubmit: function(){
+				if(this.name.value.length < 1) {
+					$.messager.alert('提示','字段名称不能为空.');
+					return false;
+				}
+				if(!(/^\w+?$/).test(this.field_key.value)) {
+					$.messager.alert('提示','标识符只能由大写字母,数字,下划线构成.');
+					return false;
+				}
+				if(this.type.value < 1) {
+					$.messager.alert('提示','请选择字段类型.');
+					return false;
+				}
+			},
+			success:function(data){
+				data = $.parseJSON(data);
+				if(data && data.code) {
+					$("#fieldEditDlg").dialog('close');
+					$("#formFieldList").datagrid('reload');
+				} else {
+					$.messager.alert('操作失败', data.msg);
+				}
+			}
+		});
+	});
+	
+	// 删除字段
+	$("a.do-remove-field").click(function(){
+		var selectedRowData = $("#formFieldList").datagrid('getSelected');
+		if(selectedRowData == null) {
+			$.messager.alert('提示','请先选择一个字段以删除.');
+			return false;
+		}
+		$.messager.confirm('确认删除','你确定删除选中的字段吗？',function(r){
+			if (r){  
+				$.post('<?php echo get_url('Form', 'deleteField');?>', {id:selectedRowData.id}, function(data){
+					if(data && data.code) {
+						$.messager.alert('提示','操作成功！');
+						$("#formFieldList").datagrid('reload');
+					}else{
+						$.messager.alert('操作失败',"删除失败，请重试操作。");
+					}
+				},"json");
+			}
+		});
+	});
+	
+	/**
+	 * 编辑字段
+	 */
+	function editField(rowData) {
+		$("#fieldEditDlg").dialog('open');
+		$("#fieldEditForm").form('clear');
+		if(rowData) {
+			$("#fieldEditDlg").dialog('setTitle', '编辑字段');
+			$("#fieldEditForm").form('load', rowData);
+		} else {
+			$("#fieldEditDlg").dialog('setTitle', '新建字段');
+			$("#fieldEditForm").form('load', {form_id:'<?php if($formInfo)echo $formInfo->id; ?>'});
+		}
+	}
+});
+//]]>
+</script>

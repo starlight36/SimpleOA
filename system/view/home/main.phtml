@@ -1,0 +1,33 @@
+<?php $this->addStyle('styles/main.css'); ?>
+<?php $this->headBegin(); ?>
+<script type="text/javascript">
+//<![CDATA[
+	$(function($){
+		$('#navTree').tree({  
+			url:'<?php echo get_url('Home', 'navtree');?>' ,
+			onSelect:function(node) {
+				if(node.attributes.url) {
+					$("body").layout("panel", "center").panel("refresh", node.attributes.url);
+				}
+			}
+		});
+	});
+//]]>
+</script>
+<?php $this->headEnd(); ?>
+<?php include $this->getTemplate('common/header.phtml');?>
+<body class="easyui-layout">
+	<div region="north" border="false" class="title">
+		<h1>通用办公系统平台</h1>
+		<div class="user-panel">
+			欢迎&nbsp;<?php echo htmlspecialchars($SESSION->get('userInfo')->name); ?>
+			[<?php echo htmlspecialchars($SESSION->get('userInfo')->number); ?>]!&nbsp;
+			<a href="<?php echo get_url('Home', 'logout') ?>" title="退出登录">退出</a>
+		</div>
+	</div>
+	<div region="west" title="功能导航" split="true" border="false" class="sidenav">
+		<ul id="navTree"></ul>
+	</div>
+	<div region="center" border="false" href="<?php echo get_url('Home', 'desktop');?>"></div>
+</body>
+<?php include $this->getTemplate('common/footer.phtml');?>

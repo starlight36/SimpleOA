@@ -1,0 +1,134 @@
+<div id="orgLayout" class="easyui-layout" style="width: 100%; height: 100%;">
+	<div region="north" border="false">
+		<div style="padding:5px; background: #fafafa; border:1px solid #ccc">  
+		<a href="#" class="easyui-linkbutton do-add-org" plain="true" iconCls="icon-add-org">新建组织</a>
+		<a href="#" class="easyui-linkbutton do-add-role" plain="true" iconCls="icon-add-role">新建角色</a>
+		<a href="#" class="easyui-linkbutton do-add-user" plain="true" iconCls="icon-add-user">新建用户</a>
+		<a href="#" class="easyui-linkbutton do-delete" plain="true" iconCls="icon-cancel">删除</a>  
+		<a href="#" class="easyui-linkbutton do-reload" plain="true" iconCls="icon-reload">刷新</a>  
+	</div>  
+	</div>
+	<div region="west" style="width: 420px;" border="true" split="true">
+		<table id="orgTreeGrid" title="组织结构" class="easyui-treegrid"
+			   rownumbers="true" url="<?php echo get_url('Organization', 'treeview'); ?>"
+			   idField="id" treeField="name" border="false" maximized="true">
+		</table>
+	</div>
+	<div region="center" border="true">
+		<div>
+			<ol>
+				<h3>操作说明</h3>
+				<li>要新建组织/角色/用户, 请点击菜单栏的"新建"按钮</li>
+				<li>要在某一组织下建立子组织机构, 请先选中一个组织, 然后点击新建.</li>
+				<li>要在新建一个用户, 请先选中一个角色.</li>
+				<li>双击左侧列表中的节点即可编辑该节点.</li>
+			</ol>
+		</div>
+	</div>
+</div>
+<script type="text/javascript">
+//<![CDATA[
+// 传值使用
+var selectedNodeType = null;
+var selectedNodeId = null;
+
+$(function($){
+	
+	function loadEdit(type) {
+		var id = selectedNodeId ? selectedNodeId : 0;
+		if(type) {
+			id = 0;
+		} else {
+			type = selectedNodeType;
+		}
+		var url = '';
+		if(type == 'org') {
+			url = '<?php echo get_url('Organization', 'editOrg', array('id'=>'__ID__')); ?>';
+		} else if(type == 'role') {
+			url = '<?php echo get_url('Organization', 'editRole', array('id'=>'__ID__')); ?>';
+		} else {
+			url = '<?php echo get_url('Organization', 'editUser', array('id'=>'__ID__')); ?>';
+		}
+		url = url.replace(/__ID__/g, id);
+		$("#orgLayout").layout("panel", "center").panel("refresh", url);
+	}
+	
+	$("#orgTreeGrid").treegrid({
+		url:"<?php echo get_url('Organization', 'treeview'); ?>",
+		columns:[[  
+			{field:'name',title:'名称',width:170},
+			{field:'description',title:'简介',width:180}
+		]],
+	
+		onClickRow: function(row) {
+			selectedNodeType = row.attributes.type;
+			selectedNodeId = row.attributes.id;
+		},
+		
+		onDblClickRow:function(row) {
+			if(document.selection && document.selection.empty) {
+				document.selection.empty();
+			} else if(window.getSelection) {
+				var sel = window.getSelection();
+				sel.removeAllRanges();
+			}
+			selectedNodeType = row.attributes.type;
+			selectedNodeId = row.attributes.id;
+			if(selectedNodeType == 'role' && selectedNodeId == 0) {
+				$.messager.alert('提示','您不能编辑系统内置角色.');
+				return;
+			}
+			loadEdit();
+		}
+	});
+	
+	// 刷新页面的按钮响应
+	$(".do-reload").click(function(){
+		$(this).blur();
+		$("body").layout("panel", "center").panel("refresh");
+	});
+	
+	// 添加组织的按钮响应
+	$(".do-add-org").click(function(){
+		$(this).blur();
+		loadEdit("org");
+	});
+	
+	// 添加角色的按钮响应
+	$(".do-add-role").click(function(){
+		$(this).blur();
+		loadEdit("role");
+	});
+	
+	// 添加用户的按钮响应
+	$(".do-add-user").click(function(){
+		$(this).blur();
+		loadEdit("user");
+	});
+	
+	// 删除节点的按钮响应
+	$(".do-delete").click(function(){
+		$(this).blur();
+		if(!selectedNodeId) {
+			$.messager.alert('Warning','要删除项目请先选中一个节点.');
+			return false;
+		}
+		$.messager.confirm('Confirm','你确定要删除这个节点吗?<br />\n\
+							删除操作可能影响到当前业务的运行,<br />请务必慎重.'
+		,function(r){
+			if (r){
+				$.post("<?php echo get_url('Organization', 'delete'); ?>"
+					,{"type":selectedNodeType, "id":selectedNodeId}, function(data){
+					if(data.code) {
+						$.messager.alert('提示','操作成功.');
+					} else{
+						$.messager.alert('提示','操作失败.');
+					}
+				}, "json");
+			}
+		});
+	});
+	
+});
+//]]>
+</script>

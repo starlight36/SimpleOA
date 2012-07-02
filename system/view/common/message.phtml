@@ -1,0 +1,5 @@
+<?php include $this->getTemplate('common/header.phtml');?>
+<?php if($message_type == 'error'):?>
+<h1>发生错误: <?php echo $message; ?></h1>
+<?php endif; ?>
+<?php include $this->getTemplate('common/footer.phtml');?>

@@ -1,0 +1,136 @@
+<div id="processLayout" class="easyui-layout" style="width: 100%; height: 100%;">
+	<div region="north" border="false">
+		<div style="padding:5px; background: #fafafa; border:1px solid #ccc">  
+		<a href="#" class="easyui-linkbutton do-add-category" plain="true" iconCls="icon-dir-add">新建分类</a>
+		<a href="#" class="easyui-linkbutton do-add-process" plain="true" iconCls="icon-process-add">新建流程</a>
+		<a href="#" class="easyui-linkbutton do-delete" plain="true" iconCls="icon-cancel">删除</a>  
+		<a href="#" class="easyui-linkbutton do-reload" plain="true" iconCls="icon-reload">刷新</a>  
+	</div>  
+	</div>
+	<div region="west" style="width: 420px;" border="true" split="true">
+		<table id="processTreeGrid" title="流程列表" class="easyui-treegrid"
+			   rownumbers="true" url="<?php echo get_url('Process', 'treeview'); ?>"
+			   idField="id" treeField="name" border="false" maximized="true">
+		</table>
+	</div>
+	<div region="center" border="true">
+		<div>
+			<ol>
+				<h3>操作说明</h3>
+				<li>要新建流程分类，请点击菜单栏的“新建分类”按钮。</li>
+				<li>要删除流程分类，请先选中一个分类，然后点击“删除分类”按钮，要删除的分类下必须没有流程。</li>
+				<li>要创建一个新的工作流，请点击“新建流程”按钮。</li>
+				<li>要废弃一个工作流，请先选中工作流，再点击“弃用流程”按钮。</li>
+				<li>新创建的工作流，在没有发布前可以编辑基本信息、流程节点信息；一旦工作流发布，则仅能修改基本信息。</li>
+			</ol>
+		</div>
+	</div>
+</div>
+<script type="text/javascript">
+//<![CDATA[
+// 传值使用
+var selectedNodeType = null;
+var selectedNodeId = null;
+
+$(function($){
+	
+	function loadEdit(type) {
+		var id = selectedNodeId ? selectedNodeId : 0;
+		if(type) {
+			id = 0;
+		} else {
+			type = selectedNodeType;
+		}
+		var url = '';
+		if(type == 'category') {
+			url = '<?php echo get_url('Process', 'editCategory', array('id'=>'__ID__')); ?>';
+		} else {
+			url = '<?php echo get_url('Process', 'editProcessInfo', array('id'=>'__ID__')); ?>';
+		}
+		url = url.replace(/__ID__/g, id);
+		$("#processLayout").layout("panel", "center").panel("refresh", url);
+	}
+	
+	$("#processTreeGrid").treegrid({
+		url:"<?php echo get_url('Process', 'treeview'); ?>",
+		columns:[[  
+			{field:'name',title:'名称',width:170},
+			{field:'description',title:'简介',width:180}
+		]],
+	
+		onClickRow: function(row) {
+			selectedNodeType = row.attributes.type;
+			selectedNodeId = row.attributes.id;
+		},
+		
+		onDblClickRow:function(row) {
+			if(document.selection && document.selection.empty) {
+				document.selection.empty();
+			} else if(window.getSelection) {
+				var sel = window.getSelection();
+				sel.removeAllRanges();
+			}
+			if(row.attributes.id == 0) {
+				return;
+			}
+			selectedNodeType = row.attributes.type;
+			selectedNodeId = row.attributes.id;
+			loadEdit();
+		}
+	});
+	
+	// 刷新页面的按钮响应
+	$(".do-reload").click(function(){
+		$(this).blur();
+		$("body").layout("panel", "center").panel("refresh");
+	});
+	
+	// 添加组织的按钮响应
+	$(".do-add-category").click(function(){
+		$(this).blur();
+		loadEdit("category");
+	});
+	
+	// 添加角色的按钮响应
+	$(".do-add-process").click(function(){
+		$(this).blur();
+		loadEdit("process");
+	});
+	
+	// 添加用户的按钮响应
+	$(".do-add-user").click(function(){
+		$(this).blur();
+		loadEdit("user");
+	});
+	
+	// 删除节点的按钮响应
+	$(".do-delete").click(function(){
+		$(this).blur();
+		if(selectedNodeId == 0) {
+			$.messager.alert('Warning','系统分类不可删除.');
+			return false;
+		}
+		if(!selectedNodeId) {
+			$.messager.alert('Warning','要删除项目请先选中一个节点.');
+			return false;
+		}
+		$.messager.confirm('Confirm','你确定要删除这个节点吗?<br />\n\
+							删除操作可能影响到当前业务的运行,<br />请务必慎重.'
+		,function(r){
+			if (r){
+				$.post("<?php echo get_url('Process', 'delete'); ?>"
+					,{"type":selectedNodeType, "id":selectedNodeId}, function(data){
+					if(data.code) {
+						$.messager.alert('提示','操作成功.');
+						$("body").layout("panel", "center").panel("refresh");
+					} else{
+						$.messager.alert('提示',data.msg);
+					}
+				}, "json");
+			}
+		});
+	});
+	
+});
+//]]>
+</script>

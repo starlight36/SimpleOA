@@ -1,0 +1,190 @@
+<?php if ($taskInfo): ?>
+<?php if($disposePermission): ?>
+<div style="padding:5px; background: #fafafa; border-bottom:1px solid #ccc">
+	<?php $actions = explode(',', $processNodeInfo->action_exp); array_walk($actions, 'trim'); ?>
+	<?php if(in_array('complete', $actions)): ?><a href="javascript:void(0);" class="easyui-linkbutton do-dispose" data-method="complete" plain="true" iconCls="icon-ok">完成处理</a><?php endif; ?>
+	<?php if(in_array('return', $actions)): ?><a href="javascript:void(0);" class="easyui-linkbutton do-dispose" data-method="return" plain="true" iconCls="icon-undo">向前打回</a><?php endif; ?>
+	<?php if(in_array('jump', $actions)): ?>
+		<a href="javascript:void(0);" class="easyui-linkbutton go-jump" plain="true" iconCls="icon-redo">转跳到</a>
+		<div id="jumpto-menu" style="width:150px;">
+			<?php foreach ($processNodeList as $node): ?>
+			<div class="do-dispose" data-method="jump" data-node-id="<?php echo htmlspecialchars($node->id); ?>"><?php echo htmlspecialchars($node->name); ?></div>
+			<?php endforeach; ?>
+		</div>
+	<?php endif; ?>
+	<?php if(in_array('close', $actions)): ?><a href="javascript:void(0);" class="easyui-linkbutton do-dispose" data-method="close" plain="true" iconCls="icon-cancel">关闭任务</a><?php endif; ?>
+</div>
+<?php endif; ?>
+<fieldset class="form">
+	<legend>任务基本信息</legend>
+	<section>
+		<table class="info-table">
+			<tr>
+				<td style="width: 100px;">任务ID:</td>
+				<td><?php echo htmlspecialchars($taskInfo->id); ?></td>
+			</tr>
+			<tr>
+				<td>任务标题:</td>
+				<td><?php echo htmlspecialchars($taskInfo->title); ?></td>
+			</tr>
+			<tr>
+				<td>任务创建者:</td>
+				<td><?php echo htmlspecialchars($taskInfo->creator_name); ?>&nbsp;<span style="color: #999;">[ID=<?php echo htmlspecialchars($taskInfo->creator); ?>]</span></td>
+			</tr>
+			<tr>
+				<td>创建时间:</td>
+				<td><?php echo date('Y-m-d H:i:s', $taskInfo->time); ?>&nbsp;<span style="color: #999;">[<?php echo relatively_date($taskInfo->time); ?>]</span></td>
+			</tr>
+			<tr>
+				<td>流程模板:</td>
+				<td><?php echo htmlspecialchars($processInfo->name); ?>&nbsp;<span style="color: #999;">[ID=<?php echo htmlspecialchars($processInfo->id); ?>]</span></td>
+			</tr>
+			<tr>
+				<td>当前流程节点:</td>
+				<td><?php echo htmlspecialchars($taskInfo->node_name ? $taskInfo->node_name : '结束'); ?>&nbsp;<span style="color: #999;">[KEY=<?php echo htmlspecialchars($taskInfo->current_node); ?>]</span></td>
+			</tr>
+		</table>
+	</section>
+</fieldset>
+<fieldset class="form">
+	<legend>相关表单列表</legend>
+	<section>
+		<table class="info-table">
+			<tr>
+				<th style="width: 180px;">表单名称</th>
+				<th>表单说明</th>
+				<th style="width: 170px;">操作</th>
+			</tr>
+			<?php foreach ($formList as $form): ?>
+			<tr>
+				<td><?php echo htmlspecialchars($form->name); ?></td>
+				<td><?php echo $form->description; ?></td>
+				<td>
+					<?php if($disposePermission): ?><a href="javascript:void(0);" class="easyui-linkbutton go-fill-form" iconCls="icon-fillform" data-form-id="<?php echo htmlspecialchars($form->id); ?>">填写</a><?php endif; ?>
+					<a href="javascript:void(0);" class="easyui-linkbutton go-view-form" iconCls="icon-search" data-form-id="<?php echo htmlspecialchars($form->id); ?>">查看</a>
+				</td>
+			</tr>
+			<?php endforeach; ?>
+		</table>
+	</section>
+</fieldset>
+<fieldset class="form">
+	<legend>任务处理日志</legend>
+	<section>
+		<table class="info-table">
+			<tr>
+				<th style="width: 40px;">序号</th>
+				<th style="width: 130px;">流程节点</th>
+				<th style="width: 120px;">执行者</th>
+				<th style="width: 120px;">时间</th>
+				<th style="width: 100px;">处理结果</th>
+				<th>处理意见</th>
+			</tr>
+			<?php $counter = 0; foreach ($logList as $log): $counter++;?>
+			<tr>
+				<td><?php echo htmlspecialchars($counter); ?></td>
+				<td><?php echo htmlspecialchars($log->node_name); ?></td>
+				<td><?php echo htmlspecialchars($log->actor_name); ?><span style="color: #999;">&nbsp;[ID=<?php echo htmlspecialchars($log->actor); ?>]</span></td>
+				<td><?php echo date('Y-m-d H:i:s', $log->time); ?></td>
+				<td><?php if($log->result == 'complete') echo '完成处理'; elseif($log->result == 'return') echo '向前打回'; elseif($log->result == 'jump') echo '跳转';else echo '关闭流程'; ?></td>
+				<td><?php echo $log->message; ?></td>
+			</tr>
+			<?php endforeach; ?>
+		</table>
+	</section>
+</fieldset>
+<!-- 处理任务对话框 开始 -->
+<div id="disposeTaskDlg" inline="true" closed="true" class="easyui-dialog" title="处理任务" buttons="#disposeTaskDlgButtons" modal="true" style="width:440px;height:335px;">  
+	<form id="disposeTaskForm" action="<?php echo get_url('Task', 'dispose'); ?>" method="post" class="dlg-form">
+		<input type="hidden" name="id" value="<?php echo htmlspecialchars($taskInfo->id); ?>" />
+		<input type="hidden" name="result" />
+		<input type="hidden" name="jumpto" />
+		<h3 id="disposeTitleInfo">处理任务</h3>
+		<table>
+			<tr>
+				<td class="label">处理结果: </td>
+				<td><input type="text" name="result_text" readonly="readonly" disabled="disabled" class="textfield long" /></td>
+			</tr>
+			<tr>
+				<td class="label">处理意见: </td>
+				<td><textarea id="disposeMessageRichText" name="message" class="long" style="height: 140px;"></textarea></td>
+			</tr>
+		</table>
+	</form>
+</div>
+<div id="disposeTaskDlgButtons">
+	<a href="javascript:void(0);" class="easyui-linkbutton do-save-dispose" iconCls="icon-ok">确定</a>
+	<a href="javascript:void(0);" class="easyui-linkbutton" iconCls="icon-cancel" onclick="$('#disposeTaskDlg').dialog('close');">取消</a>
+</div>
+<!-- 处理任务对话框 结束 -->
+<script type="text/javascript">
+//<![CDATA[
+$(function($){
+	// 转跳到菜单
+	$("a.go-jump").menubutton({
+		menu: '#jumpto-menu'
+	});
+	
+	// 处理流程
+	$(".do-dispose").click(function(){
+		$(this).blur();
+		var method = $(this).attr("data-method");
+		var jumpto = $(this).attr("data-node-id");
+		$("#disposeTaskForm input[name=result]").val(method);
+		var methodNameMap = {"complete":"完成处理", "return":"向前打回", "jump":"跳转到", "close":"关闭任务"};
+		$("#disposeTaskForm input[name=result_text]").val(methodNameMap[method]);
+		$("#disposeTitleInfo").html("处理任务: "+methodNameMap[method]);
+		$("#disposeTaskForm textarea[name=message]").val("");
+		$("#disposeTaskForm input[name=jumpto]").val(jumpto);
+		$("#disposeTaskDlg").dialog("open");
+		$("#disposeMessageRichText").xheditor({tools:'mini'});
+	});
+	
+	// 流程处理表单
+	$("#disposeTaskForm").form({
+		url:$(this).attr('action'),
+		success:function(data){  
+			data = $.parseJSON(data);
+			if(data.code) {
+				$.messager.alert('提示','处理成功!');
+				$("body").layout("panel", "center").panel("refresh", "<?php echo get_url('Task'); ?>");
+			} else {
+				$.messager.alert('提示','处理失败!');
+			}
+		}
+	});
+	
+	// 保存处理结果
+	$(".do-save-dispose").click(function(){
+		$(this).blur();
+		$("#disposeTaskForm").submit();
+	});
+	
+	// 填写表单
+	$("a.go-fill-form").click(function(){
+		$(this).blur();
+		var url = "<?php echo get_url('Form', 'fill', array('id'=>'__ID__', 'tid'=>'__TASKID__')); ?>";
+		url = url.replace(/__ID__/i, $(this).attr("data-form-id"));
+		url = url.replace(/__TASKID__/i, "<?php echo htmlspecialchars($taskInfo->id); ?>");
+		$("body").layout("panel", "center").panel("refresh", url);
+	});
+	
+	// 查看表单
+	$("a.go-view-form").click(function(){
+		$(this).blur();
+		var url = "<?php echo get_url('Form', 'view', array('id'=>'__ID__', 'tid'=>'__TASKID__')); ?>";
+		url = url.replace(/__ID__/i, $(this).attr("data-form-id"));
+		url = url.replace(/__TASKID__/i, "<?php echo htmlspecialchars($taskInfo->id); ?>");
+		$("body").layout("panel", "center").panel("refresh", url);
+	});
+});
+//]]>
+</script>
+<?php else: ?>
+	<fieldset class="form">
+		<legend>错误消息</legend>
+		<section style="padding: 15px;">
+			<h3>查询的任务不存在, 或者您没有访问权限.</h3>
+		</section>
+	</fieldset>
+<?php endif; ?>

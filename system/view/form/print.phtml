@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+		<link href="<?php echo $contextPath; ?>styles/main.css" rel="stylesheet" type="text/css" />
+		<title><?php echo htmlspecialchars($formInfo->name); ?></title>
+		<style>
+				* {
+					font-family: Arial,Console,Verdana,Courier New;
+					font-size: 10pt;
+					text-shadow: none !important;
+				}
+		</style>
+	</head>
+	<body>
+		<fieldset class="form">
+			<legend><?php echo htmlspecialchars($formInfo->name); ?></legend>
+			<section>
+				<table class="info-table">
+					<?php foreach($fieldInfoList as $field): ?>
+					<tr>
+						<td><?php echo htmlspecialchars($field->name); ?>: </td>
+						<td><?php echo $formData[$field->field_key]; ?></td>
+					</tr>
+					<?php endforeach; ?>
+				</table>
+			</section>
+		</fieldset>
+	</body>
+</html>

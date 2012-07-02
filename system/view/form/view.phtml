@@ -1,0 +1,41 @@
+<div style="padding:5px; background: #fafafa; border-bottom:1px solid #ccc">
+	<a href="javascript:void(0);" class="easyui-linkbutton do-back" plain="true" iconCls="icon-back">返回流程</a>
+	<a href="javascript:void(0);" class="easyui-linkbutton do-print" plain="true" iconCls="icon-print">打印表单</a>
+</div>
+<fieldset class="form">
+	<legend><?php echo htmlspecialchars($formInfo->name); ?></legend>
+	<section>
+		<table class="info-table">
+			<?php foreach($fieldInfoList as $field): ?>
+			<tr>
+				<td><?php echo htmlspecialchars($field->name); ?>: </td>
+				<td><?php echo $formData[$field->field_key]; ?></td>
+			</tr>
+			<?php endforeach; ?>
+		</table>
+	</section>
+</fieldset>
+<iframe style="position:absolute;top:0px; left:0px;width:0px; height:0px;border:0px;overfow:none; z-index:-1;" id="printFrame" name="printFrame" />
+<script type="text/javascript">
+//<![CDATA[
+$(function($){
+	// 返回按钮
+	$("a.do-back").click(function(){
+		var url = '<?php echo get_url('Task', 'view', array('id'=>$REQUEST->getQuery('tid'))); ?>';
+		$("body").layout("panel", "center").panel("refresh", url);
+	});
+	
+	// 打印表单
+	$("a.do-print").click(function(){
+		$(this).blur();
+		$.messager.alert("提示", "正在打印...");
+		var url = "<?php echo get_url('Form', 'view', array('id'=>'__ID__', 'tid'=>'__TASKID__', 'print'=>1)); ?>";
+		url = url.replace(/__ID__/i, <?php echo $formInfo->id; ?>);
+		url = url.replace(/__TASKID__/i, "<?php echo $REQUEST->getQuery('tid'); ?>");
+		$("#printFrame")[0].src = url+"&r="+Math.random();
+		$("#printFrame").bind("load",function() { window.printFrame.print(); })
+	});
+	
+});
+//]]>
+</script>

@@ -1,0 +1,132 @@
+<div style="padding:5px; background: #fafafa; border-bottom:1px solid #ccc">  
+	<a href="javascript:void(0);" class="easyui-linkbutton do-save" plain="true" iconCls="icon-save">保存修改</a>
+</div>
+<fieldset class="form">
+	<legend><?php if(empty($userInfo)):?>新建<?php else:?>编辑<?php endif;?>用户</legend>
+	<form id="userEditForm" action="<?php echo get_url('Organization', 'saveUser'); ?>" method="post">
+		<input type="hidden" name="id" value="<?php if($userInfo)echo $userInfo->id; else echo '0'; ?>" />
+		<table>
+			<tr>
+				<td class="label">登录账号:</td>
+				<td><input name="number" type="text" class="textfield long" value="<?php if($userInfo)echo $userInfo->number; ?>" /></td>
+			</tr>
+			<tr>
+				<td class="label">显示名称:</td>
+				<td><input name="name" type="text" class="textfield long" value="<?php if($userInfo)echo $userInfo->name; ?>" /></td>
+			</tr>
+			<tr>
+				<td class="label">密码:</td>
+				<td><input name="password" type="password" class="textfield long" /></td>
+			</tr>
+			<tr>
+				<td class="label">确认密码:</td>
+				<td><input name="password_confirm" type="password" class="textfield long" /></td>
+			</tr>
+			<tr>
+				<td class="label">电子邮件:</td>
+				<td><input name="email" type="text" class="textfield long" value="<?php if($userInfo)echo $userInfo->email; ?>" /></td>
+			</tr>
+			<tr>
+				<td class="label">性别:</td>
+				<td>
+					<label><input type="radio" name="gender" value="0" <?php if(!$userInfo || $userInfo->gender != 1)echo 'checked="checked"'; ?>/>男</label>
+					<label><input type="radio" name="gender" value="1" <?php if($userInfo && $userInfo->gender == 1)echo 'checked="checked"'; ?>/>女</label>
+				</td>
+			</tr>
+			<tr>
+				<td class="label">出生日期:</td>
+				<td><input id="input-birthday" name="birthday" type="text" class="textfield long" value="<?php if($userInfo)echo $userInfo->birthday; ?>" /></td>
+			</tr>
+			<tr>
+				<td class="label">所属角色:</td>
+				<td><input type="text" id="input-related-role" name="related-role[]"/></td>
+			</tr>
+			<tr>
+				<td class="label">创建日期:</td>
+				<td><input name="create_time" type="text" disabled="true" class="textfield long" value="<?php if($userInfo)echo date ('Y-m-d H:i:s', $userInfo->create_time); ?>" /></td>
+			</tr>
+			<tr>
+				<td class="label">最后登录:</td>
+				<td><input name="last_login_time" type="text" disabled="true" class="textfield long" value="<?php if($userInfo)echo date ('Y-m-d H:i:s', $userInfo->last_login_time); ?>" /></td>
+			</tr>
+			<tr>
+				<td class="label">状态:</td>
+				<td>
+					<label><input type="radio" name="status" value="0" <?php if(!$userInfo || $userInfo->status < 1)echo 'checked="checked"'; ?>/>正常</label>
+					<label><input type="radio" name="status" value="1" <?php if($userInfo && $userInfo->status == 1)echo 'checked="checked"'; ?>/>已停用</label>
+				</td>
+			</tr>
+		</table>
+	</form>
+</fieldset>
+<script type="text/javascript">
+//<![CDATA[
+$(function($){
+	$("#input-related-role").combogrid({
+		url:'<?php echo get_url('Organization', 'rolecombo'); ?>',
+		panelWidth:302,
+		multiple:true,
+		width:302,
+		idField:'id',
+		textField:'name',
+		columns:[[
+			{field:'name',title:'角色名称',width:100},
+			{field:'description',title:'角色简介',width:180}
+		]],
+		onLoadSuccess:function(data) {
+			$(this).combogrid("setValues", [<?php echo implode(',', $userCurrentRoles ? $userCurrentRoles : array());?>]);
+		}
+	});
+	$("#input-birthday").datebox({
+		width: 302,
+		formatter:function(date) {
+			return date.getFullYear()+"-"+(date.getMonth()+1)+"-"+date.getDate();
+		},
+		parser:function(d) {
+			var date = new Date();
+			if(d) {
+				date = new Date(Date.parse(d.replace(/-/g, "/")));
+			}
+			return date;
+		}
+	});
+	$("#userEditForm").form({
+		url:$(this).attr('action'),
+		onSubmit: function(){
+			if(!this.number.value) {
+				$.messager.alert('提示','账号必须填写.');
+				return false;
+			}
+			if(!this.name.value) {
+				$.messager.alert('提示','显示名称必须填写.');
+				return false;
+			}
+			if(this.id.value == 0 && !this.password.value) {
+				$.messager.alert('提示','密码必须填写.');
+				return false;
+			}
+			if(this.password.value && this.password.value != this.password_confirm.value) {
+				$.messager.alert('提示','两次输入的密码不一致.');
+				return false;
+			}
+			$(".do-save").linkbutton("disable");
+		},
+		success:function(data){  
+			data = $.parseJSON(data);
+			if(data.code) {
+				$.messager.alert('提示','操作成功!');
+				$("#orgLayout").layout("panel", "center").panel("refresh");
+			}else{
+				$.messager.alert('提示',data.msg);
+				$(".do-save").linkbutton("enable");
+			}
+		}
+	});
+	$(".do-save").click(function(){
+		$(this).blur();
+		if($(this).linkbutton("options").disabled) return false;
+		$("#userEditForm").submit();
+	});
+});
+//]]>
+</script>

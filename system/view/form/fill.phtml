@@ -1,0 +1,68 @@
+<div style="padding:5px; background: #fafafa; border-bottom:1px solid #ccc">
+	<a href="javascript:void(0);" class="easyui-linkbutton do-back" plain="true" iconCls="icon-back">返回流程</a>
+	<a href="javascript:void(0);" class="easyui-linkbutton do-save" plain="true" iconCls="icon-save">保存表单</a>
+</div>
+<fieldset class="form">
+	<legend>表单填写说明</legend>
+	<section style="padding: 0 10px 3px 10px;">
+		<?php echo $formInfo->description; ?>
+	</section>
+</fieldset>
+<fieldset class="form">
+	<legend><?php echo htmlspecialchars($formInfo->name); ?></legend>
+	<section>
+		<form id="dataForm" method="post" action="<?php echo get_url('Form', 'saveFill'); ?>">
+			<input type="hidden" name="tid" value="<?php echo htmlspecialchars($REQUEST->getQuery('tid')); ?>" />
+			<input type="hidden" name="fid" value="<?php echo $formInfo->id; ?>" />
+			<table class="info-table">
+				<?php foreach($fieldList as $field): ?>
+				<tr>
+					<td style="width: 200px;">
+						<a href="javascript:void(0);" onclick="$.messager.alert('帮助', '<?php echo htmlspecialchars($field->getDescription()); ?>');" class="easyui-linkbutton" plain="true" iconCls="icon-tip" title="查看帮助"></a>
+						<?php echo htmlspecialchars($field->getName()); ?>: 
+					</td>
+					<td>
+						<?php echo $field->generate(); ?>
+					</td>
+				</tr>
+				<?php endforeach; ?>
+			</table>
+		</form>
+	</section>
+</fieldset>
+<script type="text/javascript">
+//<![CDATA[
+$(function($){
+	// 返回按钮
+	$("a.do-back").click(function(){
+		var url = '<?php echo get_url('Task', 'view', array('id'=>$REQUEST->getQuery('tid'))); ?>';
+		$("body").layout("panel", "center").panel("refresh", url);
+	});
+	
+	// 表单
+	$("#dataForm").form({
+		url:$(this).attr('action'),
+		onSubmit: function(){
+			$(".do-save").linkbutton("disable");
+		},
+		success:function(data){  
+			data = $.parseJSON(data);
+			if(data && data.code) {
+				$.messager.alert('提示','保存成功!');
+				$("a.do-back").click();
+			} else {
+				$.messager.alert('提示',data.msg);
+				$(".do-save").linkbutton("enable");
+			}
+		}
+	});
+	
+	// 保存信息
+	$("a.do-save").click(function(){
+		$(this).blur();
+		$("#dataForm").submit();
+	});
+	
+});
+//]]>
+</script>
