@@ -1,4 +1,4 @@
-﻿/*!
+/*!
  * xhEditor - WYSIWYG XHTML Editor
  * @requires jQuery v1.4.4
  *

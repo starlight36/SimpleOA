@@ -1,0 +1,29 @@
+### Ignore IDEA project file
+.idea/
+.nbproject
+*.iml
+
+### Ignore NetBeans project file
+nbproject/
+build/
+dist/
+nbactions.xml
+nb-configuration.xml
+
+### Eclipse project file
+*.pydevproject
+.metadata
+.gradle
+bin/
+tmp/
+*.tmp
+*.bak
+*.swp
+*~.nib
+local.properties
+.settings/
+.loadpath
+
+# Eclipse Core
+.project
+

@@ -6,7 +6,7 @@ return array(
 	'default' => 0,
 	'pool' => array(
 		array(
-			'uri' => 'mysql://public:public@localhost/oa'
+			'uri' => 'mysql://public:public@127.0.0.1/simple_oa'
 		),
 	)
 );
