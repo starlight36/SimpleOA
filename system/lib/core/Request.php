@@ -107,7 +107,7 @@ class Request {
 		} else {
 			$document_root_len = strlen($document_root);
 			if(substr($index_root, 0, $document_root_len) == $document_root) {
-				$this->contextPath = substr($index_root, $document_root_len - 1).'/';
+				$this->contextPath = substr($index_root, $document_root_len).'/';
 			}
 		}
 	}

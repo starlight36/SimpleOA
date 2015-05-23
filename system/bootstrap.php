@@ -6,7 +6,7 @@
 /*
  * 设置默认包含文件夹为系统目录
  */
-ini_set('include_path', SYS_PATH.';'.ini_get('include_path'));
+ini_set('include_path', SYS_PATH.PATH_SEPARATOR.ini_get('include_path'));
 
 /**
  * 加载系统定义文件 
