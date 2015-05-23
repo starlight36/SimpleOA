@@ -5,16 +5,16 @@ if [ -n "$MYSQL_PORT_3306_TCP" ]; then
 	if [ -z "$SIMPLE_OA_DB_HOST" ]; then
 		SIMPLE_OA_DB_HOST='mysql'
 	else
-		echo 2>&1 'warning: both SIMPLE_OA_DB_HOST and MYSQL_PORT_3306_TCP found'
-		echo 2>&1 "  Connecting to SIMPLE_OA_DB_HOST ($SIMPLE_OA_DB_HOST)"
-		echo 2>&1 '  instead of the linked mysql container'
+		echo 'warning: both SIMPLE_OA_DB_HOST and MYSQL_PORT_3306_TCP found'
+		echo "  Connecting to SIMPLE_OA_DB_HOST ($SIMPLE_OA_DB_HOST)"
+		echo '  instead of the linked mysql container'
 	fi
 fi
 
 if [ -z "$SIMPLE_OA_DB_HOST" ]; then
-	echo 2>&1 'error: missing SIMPLE_OA_DB_HOST and MYSQL_PORT_3306_TCP environment variables'
-	echo 2>&1 '  Did you forget to --link some_mysql_container:mysql or set an external db'
-	echo 2>&1 '  with -e SIMPLE_OA_DB_HOST=hostname:port?'
+	echo 'error: missing SIMPLE_OA_DB_HOST and MYSQL_PORT_3306_TCP environment variables'
+	echo '  Did you forget to --link some_mysql_container:mysql or set an external db'
+	echo '  with -e SIMPLE_OA_DB_HOST=hostname:port?'
 	exit 1
 fi
 
@@ -27,15 +27,15 @@ fi
 : ${SIMPLE_OA_DB_NAME:=simple_oa}
 
 if [ -z "$SIMPLE_OA_DB_PASS" ]; then
-	echo 2>&1 'error: missing required SIMPLE_OA_DB_PASS environment variable'
-	echo 2>&1 '  Did you forget to -e SIMPLE_OA_DB_PASS=... ?'
-	echo 2>&1
-	echo 2>&1 '  (Also of interest might be SIMPLE_OA_DB_USER and SIMPLE_OA_DB_NAME.)'
+	echo 'error: missing required SIMPLE_OA_DB_PASS environment variable'
+	echo '  Did you forget to -e SIMPLE_OA_DB_PASS=... ?'
+	echo 
+	echo '  (Also of interest might be SIMPLE_OA_DB_USER and SIMPLE_OA_DB_NAME.)'
 	exit 1
 fi
 
 if ! [ -e index.php ]; then
-	echo 2>&1 'error: missing SimpleOA files.'
+	echo 'error: missing SimpleOA files.'
 	exit 1
 fi
 
