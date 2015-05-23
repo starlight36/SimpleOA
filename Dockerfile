@@ -13,6 +13,7 @@ COPY . /var/www/html/
 RUN chown -R www-data:www-data /var/www/html/
 
 COPY docker-entrypoint.sh /entrypoint.sh
+RUN chmod +x /entrypoint.sh
 
 # grr, ENTRYPOINT resets CMD now
 ENTRYPOINT ["/entrypoint.sh"]
