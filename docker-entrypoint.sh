@@ -5,16 +5,16 @@ if [ -n "$MYSQL_PORT_3306_TCP" ]; then
 	if [ -z "$SIMPLE_OA_DB_HOST" ]; then
 		SIMPLE_OA_DB_HOST='mysql'
 	else
-		echo >&2 'warning: both SIMPLE_OA_DB_HOST and MYSQL_PORT_3306_TCP found'
-		echo >&2 "  Connecting to SIMPLE_OA_DB_HOST ($SIMPLE_OA_DB_HOST)"
-		echo >&2 '  instead of the linked mysql container'
+		echo 2>&1 'warning: both SIMPLE_OA_DB_HOST and MYSQL_PORT_3306_TCP found'
+		echo 2>&1 "  Connecting to SIMPLE_OA_DB_HOST ($SIMPLE_OA_DB_HOST)"
+		echo 2>&1 '  instead of the linked mysql container'
 	fi
 fi
 
 if [ -z "$SIMPLE_OA_DB_HOST" ]; then
-	echo >&2 'error: missing SIMPLE_OA_DB_HOST and MYSQL_PORT_3306_TCP environment variables'
-	echo >&2 '  Did you forget to --link some_mysql_container:mysql or set an external db'
-	echo >&2 '  with -e SIMPLE_OA_DB_HOST=hostname:port?'
+	echo 2>&1 'error: missing SIMPLE_OA_DB_HOST and MYSQL_PORT_3306_TCP environment variables'
+	echo 2>&1 '  Did you forget to --link some_mysql_container:mysql or set an external db'
+	echo 2>&1 '  with -e SIMPLE_OA_DB_HOST=hostname:port?'
 	exit 1
 fi
 
@@ -27,28 +27,36 @@ fi
 : ${SIMPLE_OA_DB_NAME:=simple_oa}
 
 if [ -z "$SIMPLE_OA_DB_PASS" ]; then
-	echo >&2 'error: missing required SIMPLE_OA_DB_PASS environment variable'
-	echo >&2 '  Did you forget to -e SIMPLE_OA_DB_PASS=... ?'
-	echo >&2
-	echo >&2 '  (Also of interest might be SIMPLE_OA_DB_USER and SIMPLE_OA_DB_NAME.)'
+	echo 2>&1 'error: missing required SIMPLE_OA_DB_PASS environment variable'
+	echo 2>&1 '  Did you forget to -e SIMPLE_OA_DB_PASS=... ?'
+	echo 2>&1
+	echo 2>&1 '  (Also of interest might be SIMPLE_OA_DB_USER and SIMPLE_OA_DB_NAME.)'
 	exit 1
 fi
 
 if ! [ -e index.php ]; then
-	echo >&2 'error: missing SimpleOA files.'
+	echo 2>&1 'error: missing SimpleOA files.'
 	exit 1
 fi
 
 # Modify db config
-value="mysql://$SIMPLE_OA_DB_USER:$SIMPLE_OA_DB_PASS@$SIMPLE_OA_DB_HOST/$SIMPLE_OA_DB_NAME"
-php_escaped_value="$(php -r 'var_export($argv[1]);' "$value")"
-sed_escaped_value="$(echo "$php_escaped_value" | sed 's/[\/&]/\\&/g')"
-sed -ri "s/mysql:\/\/public:public@127.0.0.1\/simple_oa/$sed_escaped_value/" system/config/db.php
+(cat <<'EOPHP'
+<?php
+return array(
+	'default' => 0,
+	'pool' => array(
+		array(
+			'uri' => 'mysql://${SIMPLE_OA_DB_USER}:${SIMPLE_OA_DB_PASS}@${$SIMPLE_OA_DB_HOST}/${SIMPLE_OA_DB_NAME}'
+		),
+	)
+);
+EOPHP
+) > system/config/db.php
 
 TERM=dumb php -- "$SIMPLE_OA_DB_HOST" "$SIMPLE_OA_DB_USER" "$SIMPLE_OA_DB_PASS" "$SIMPLE_OA_DB_NAME" <<'EOPHP'
 <?php
 // database might not exist, so let's try creating it (just to be safe)
-$stderr = fopen('php://stderr', 'w');
+$stderr = fopen('php://stdout', 'w');
 list($host, $port) = explode(':', $argv[1], 2);
 $maxTries = 10;
 do {
