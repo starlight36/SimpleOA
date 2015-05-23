@@ -46,12 +46,16 @@ return array(
 	'default' => 0,
 	'pool' => array(
 		array(
-			'uri' => 'mysql://${SIMPLE_OA_DB_USER}:${SIMPLE_OA_DB_PASS}@${$SIMPLE_OA_DB_HOST}/${SIMPLE_OA_DB_NAME}'
+			'uri' => 'mysql://__mysqlurl__'
 		),
 	)
 );
 EOPHP
 ) > system/config/db.php
+value="$SIMPLE_OA_DB_USER:$SIMPLE_OA_DB_PASS@$SIMPLE_OA_DB_HOST/$SIMPLE_OA_DB_NAME"
+sed_escaped_value="$(echo "$value" | sed 's/[\/&]/\\&/g')"
+sed -ri "s/__mysqlurl__/$sed_escaped_value/" system/config/db.php
+
 
 TERM=dumb php -- "$SIMPLE_OA_DB_HOST" "$SIMPLE_OA_DB_USER" "$SIMPLE_OA_DB_PASS" "$SIMPLE_OA_DB_NAME" <<'EOPHP'
 <?php
