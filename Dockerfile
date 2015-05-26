@@ -11,8 +11,7 @@ RUN docker-php-ext-install mysqli pdo_mysql
 VOLUME /var/www/html/
 COPY . /var/www/html/
 COPY php.ini /usr/local/etc/php/simple-oa.ini
-RUN chown -R www-data:www-data /var/www/html/
-RUN chmod -R 777 /var/www/html/system/log /var/www/html/system/temp
+
 
 COPY docker-entrypoint.sh /entrypoint.sh
 RUN chmod +x /entrypoint.sh
