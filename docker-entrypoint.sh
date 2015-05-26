@@ -113,4 +113,7 @@ if (file_exists('system/data/oa.sql')) {
 $mysql->close();
 EOPHP
 
+# Repair owner
+chown -R www-data:www-data /var/www/html/
+
 exec "$@"
